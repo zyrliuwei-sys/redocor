@@ -225,7 +225,7 @@ export function getSettings(): Setting[] {
       name: 'app_name',
       title: 'App Name',
       type: 'text',
-      placeholder: 'My App',
+      placeholder: 'Redocor AI',
       group: 'appinfo',
       tab: 'general',
     },
@@ -233,7 +233,8 @@ export function getSettings(): Setting[] {
       name: 'app_description',
       title: 'App Description',
       type: 'textarea',
-      placeholder: 'Ship your SaaS faster',
+      placeholder:
+        'AI room design from a single photo — redesign your space in seconds',
       group: 'appinfo',
       tab: 'general',
     },

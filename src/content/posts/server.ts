@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start';
 
 import {
   getLocalPosts,
+  isRoomDesignPost,
   loadLocalPost,
   mergePosts,
   type BlogPost,
@@ -55,7 +56,14 @@ export const getBlogPostFn = createServerFn()
     try {
       const { findPublishedBySlug } = await import('@/modules/posts/service');
       const row = await findPublishedBySlug(data.slug);
-      if (row) {
+      if (
+        row &&
+        isRoomDesignPost({
+          title: row.title || row.slug,
+          description: row.description || '',
+          content: row.content,
+        })
+      ) {
         return {
           slug: row.slug,
           title: row.title || row.slug,

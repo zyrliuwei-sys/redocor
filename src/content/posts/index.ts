@@ -44,6 +44,85 @@ export type BlogPostDetail = BlogPost & {
   content?: string;
 };
 
+// Public blog content is intentionally scoped to the product. This keeps old
+// CMS entries from another project (for example poster-size guides) out of the
+// blog, sitemap, and llms.txt even if they still exist in the database.
+const ROOM_DESIGN_CONTEXT = [
+  'room',
+  'interior',
+  'bedroom',
+  'living room',
+  'kitchen',
+  'bathroom',
+  'dining room',
+  'home office',
+  'office',
+  'basement',
+  'attic',
+  'study room',
+  'kids room',
+  'furniture',
+  'decor',
+  'makeover',
+  'redesign',
+  'storage',
+  'apartment',
+  'home design',
+  'wall',
+  'window',
+  'lighting',
+  '房间',
+  '室内',
+  '卧室',
+  '客厅',
+  '厨房',
+  '卫生间',
+  '浴室',
+  '餐厅',
+  '书房',
+  '办公室',
+  '地下室',
+  '阁楼',
+  '儿童房',
+  '家居',
+  '家装',
+  '装修',
+  '改造',
+  '布置',
+  '家具',
+  '收纳',
+  '墙',
+  '窗',
+  '灯光',
+  '空间',
+  '小户型',
+] as const;
+
+const LEGACY_COPY_MARKERS = [
+  'poster',
+  'postersize',
+  'print & digital',
+  'print and digital',
+  'digital dimensions',
+  'livestream',
+  'live stream',
+] as const;
+
+export function isRoomDesignPost(
+  post: Pick<BlogPost, 'title' | 'description'> & {
+    content?: string | null;
+  }
+): boolean {
+  const copy = [post.title, post.description, post.content]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  if (LEGACY_COPY_MARKERS.some((marker) => copy.includes(marker))) {
+    return false;
+  }
+  return ROOM_DESIGN_CONTEXT.some((term) => copy.includes(term));
+}
+
 // Eagerly bundle the local MDX posts (small markdown files), mirroring the
 // static-pages pattern. Keys are absolute from the project root.
 const postModules = import.meta.glob<PostModule>('/src/content/posts/*.mdx', {
@@ -92,9 +171,10 @@ export function mergePosts(
   localPosts: BlogPost[],
   options: { limit?: number } = {}
 ): BlogPost[] {
-  const dbSlugs = new Set(dbPosts.map((p) => p.slug));
+  const scopedDbPosts = dbPosts.filter(isRoomDesignPost);
+  const dbSlugs = new Set(scopedDbPosts.map((p) => p.slug));
   const merged = [
-    ...dbPosts,
+    ...scopedDbPosts,
     ...localPosts.filter((p) => !dbSlugs.has(p.slug)),
   ].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
