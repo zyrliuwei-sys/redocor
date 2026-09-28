@@ -6,6 +6,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "redocor",
+  "compatibility_date": "2026-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "observability": {
     "enabled": true,
@@ -14,10 +15,10 @@
     "DATABASE_PROVIDER": "postgresql",
     // Server-side runtime fallbacks for the build-time VITE_* values — keep in
     // sync with .env.production (better-auth trustedOrigins, payment callbacks).
-    "VITE_APP_URL": "https://redocor.com",
+    "VITE_APP_URL": "https://www.redocor.com",
     "VITE_APP_NAME": "Redocor AI",
   },
-  "routes": [{ "pattern": "redocor.com", "custom_domain": true }],
+  "routes": [{ "pattern": "www.redocor.com", "custom_domain": true }],
   // ── Postgres via Hyperdrive (instead of D1) ────────────────────────────────
   // Created by /deploy-cloudflare from the Neon direct connection string.
   // The build keeps the postgres driver in the bundle when
