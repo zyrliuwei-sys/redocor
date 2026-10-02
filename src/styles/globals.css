@@ -180,6 +180,27 @@
     }
   }
 
+  /* Footer badge strip: track holds two copies, shifting by one copy loops seamlessly. */
+  @keyframes badge-marquee {
+    from {
+      transform: translate3d(-50%, 0, 0);
+    }
+    to {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+  .badge-marquee-track {
+    animation: badge-marquee 40s linear infinite;
+  }
+  .badge-marquee:hover .badge-marquee-track {
+    animation-play-state: paused;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .badge-marquee-track {
+      animation: none;
+    }
+  }
+
   @keyframes fade-in {
     from {
       opacity: 0;

@@ -86,8 +86,6 @@ export function SiteFooter({
           <GridLineHorizontal className="mx-auto mt-8 max-w-7xl" />
         </div>
 
-        <FooterBadgeList className="mt-8" />
-
         <div className="mt-8 flex w-full flex-col items-end justify-between gap-6 sm:flex-row">
           <span className="text-right text-sm text-neutral-400">
             {copyright ||
@@ -110,6 +108,8 @@ export function SiteFooter({
             </div>
           )}
         </div>
+
+        <FooterBadgeList className="mt-6" />
       </div>
     </footer>
   );
