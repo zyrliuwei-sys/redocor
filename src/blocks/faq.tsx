@@ -16,7 +16,6 @@ export const FAQ_KEYS = [
   'phone',
   'time',
   'commercial',
-  'declutter',
 ] as const;
 
 /**

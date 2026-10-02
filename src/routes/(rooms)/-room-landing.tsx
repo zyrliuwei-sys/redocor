@@ -22,8 +22,7 @@ export type RoomLandingKey =
   | 'study'
   | 'kids'
   | 'planner'
-  | 'makeover'
-  | 'organizer';
+  | 'makeover';
 
 type RoomLanding = {
   /** ?room= value handed to the studio (room keys only). */
@@ -124,31 +123,23 @@ export const ROOM_LANDINGS: Record<RoomLandingKey, RoomLanding> = {
     imageStyle: 'scandinavian',
     featuredStyles: ['modern', 'bohemian', 'midcentury'],
   },
-  organizer: {
-    image: '/imgs/demo/bedroom-modern.avif',
-    ...AVIF,
-    imageStyle: 'modern',
-    featuredStyles: ['minimalist', 'scandinavian', 'japandi'],
-  },
 } as const;
 
 /** Display name substituted into the shared {room} params. */
 function roomLabel(key: RoomLandingKey): string {
-  if (key === 'planner' || key === 'makeover' || key === 'organizer') {
+  if (key === 'planner' || key === 'makeover') {
     return m['roompage.generic_room']();
   }
   return m[`create.room.${key}` as 'create.room.living']().toLowerCase();
 }
 
 /**
- * Spoke "kind" — rooms share the design wording, while organizer/planner/
- * makeover get their own verbs so a page about tidying doesn't claim to be
- * about design, and the makeover page reads like a makeover page.
+ * Spoke "kind" — rooms share the design wording, while planner/makeover get
+ * their own verbs so the makeover page reads like a makeover page.
  */
-type SpokeKind = 'rooms' | 'organizer' | 'planner' | 'makeover';
+type SpokeKind = 'rooms' | 'planner' | 'makeover';
 
 function spokeKind(key: RoomLandingKey): SpokeKind {
-  if (key === 'organizer') return 'organizer';
   if (key === 'planner') return 'planner';
   if (key === 'makeover') return 'makeover';
   return 'rooms';
@@ -185,7 +176,7 @@ function spokeParams(key: RoomLandingKey, room: string) {
   const tipsFor =
     kind === 'rooms'
       ? m['roompage.tips.for.rooms']({ room })
-      : m[`roompage.tips.for.${kind}` as 'roompage.tips.for.organizer']();
+      : m[`roompage.tips.for.${kind}` as 'roompage.tips.for.makeover']();
   const ctaVerb = m[`roompage.cta.verb.${kind}` as 'roompage.cta.verb.rooms']();
   const buttonVerb =
     m[`roompage.button.verb.${kind}` as 'roompage.button.verb.rooms']();
@@ -258,12 +249,9 @@ function RoomLandingPage({ roomKey }: { roomKey: RoomLandingKey }) {
   const room = roomLabel(roomKey);
   const p = spokeParams(roomKey, room);
   const relatedRooms = relatedRoomsFor(roomKey);
-  const changeDesc =
-    roomKey === 'organizer'
-      ? m['roompage.changes.desc.organizer']()
-      : CHANGE_DESCS[
-          Object.keys(ROOM_LANDINGS).indexOf(roomKey) % CHANGE_DESCS.length
-        ]({ room });
+  const changeDesc = CHANGE_DESCS[
+    Object.keys(ROOM_LANDINGS).indexOf(roomKey) % CHANGE_DESCS.length
+  ]({ room });
   const studioHref = config.studioRoom
     ? `/room-design?room=${config.studioRoom}`
     : '/room-design';
@@ -577,5 +565,4 @@ export const ROOM_PATHS: Record<RoomLandingKey, string> = {
   kids: '/ai-kids-room-design',
   planner: '/ai-room-planner',
   makeover: '/ai-room-makeover',
-  organizer: '/ai-room-organizer',
 };

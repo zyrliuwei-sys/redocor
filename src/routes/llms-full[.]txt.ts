@@ -81,11 +81,6 @@ const STATIC_PAGES: { path: string; title: string; description: string }[] = [
     description: 'Before-and-after redesigns from one photo',
   },
   {
-    path: '/ai-room-organizer',
-    title: 'AI Room Organizer',
-    description: 'Declutter and add storage from one photo',
-  },
-  {
     path: '/pricing',
     title: 'Pricing',
     description: 'Credit packs and packages',

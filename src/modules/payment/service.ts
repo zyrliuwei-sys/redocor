@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, or } from 'drizzle-orm';
 
 import { db } from '@/core/db';
 import {
@@ -10,12 +10,14 @@ import {
   WechatPayProvider,
 } from '@/core/payment';
 import {
+  PaymentEventType,
   PaymentStatus,
   PaymentType,
   SubscriptionCycleType,
   type CheckoutSession,
   type PaymentEvent,
   type PaymentOrder,
+  type PaymentRefund,
 } from '@/core/payment/types';
 import { credit, order, subscription } from '@/config/db/schema';
 import { getAllConfigs } from '@/modules/config/service';
@@ -37,6 +39,7 @@ enum OrderStatus {
   CREATED = 'created',
   PAID = 'paid',
   FAILED = 'failed',
+  REFUNDED = 'refunded',
 }
 
 // --- Payment Manager ---
@@ -272,6 +275,11 @@ export async function handleWebhook(params: {
     req: params.req,
     provider: params.provider,
   });
+  if (event.eventType === PaymentEventType.PAYMENT_REFUNDED) {
+    if (event.refund) await handleRefund(event.refund, params.provider);
+    return event;
+  }
+
   const session = event.paymentSession;
   if (!session) return event;
 
@@ -353,6 +361,21 @@ async function handleCheckoutSuccess(session: any, provider: string) {
 
     // Atomically update order + create subscription + grant credits
     await db().transaction(async (tx: any) => {
+      // 0. Claim the order. The return-URL callback and the webhook usually
+      // arrive together; both may have read it as unpaid above, so only the
+      // request whose conditional update flips the status grants anything.
+      const claimed = await tx
+        .update(order)
+        .set({ status: OrderStatus.PAID })
+        .where(
+          and(
+            eq(order.id, existingOrder.id),
+            inArray(order.status, [OrderStatus.CREATED, OrderStatus.PENDING])
+          )
+        )
+        .returning({ id: order.id });
+      if (claimed.length === 0) return;
+
       // 1. Create subscription if applicable
       if (subscriptionInfo && session.subscriptionId) {
         const subNo = getSnowId();
@@ -437,6 +460,49 @@ async function handleCheckoutSuccess(session: any, provider: string) {
       })
       .where(eq(order.id, existingOrder.id));
   }
+}
+
+// --- Refund: revoke the credits an order granted ---
+
+async function handleRefund(refund: PaymentRefund, provider: string) {
+  // Partial refunds keep the credits; settle those by hand in the admin panel.
+  if (!refund.full) return;
+  const refs = refund.references.filter(Boolean);
+  if (refs.length === 0) return;
+
+  const [paidOrder] = await db()
+    .select()
+    .from(order)
+    .where(
+      and(
+        eq(order.paymentProvider, provider),
+        eq(order.status, OrderStatus.PAID),
+        or(
+          inArray(order.paymentSessionId, refs),
+          inArray(order.transactionId, refs),
+          inArray(order.invoiceId, refs)
+        )
+      )
+    )
+    .limit(1);
+  if (!paidOrder) return;
+
+  await db().transaction(async (tx: any) => {
+    // Credits already spent stay spent; whatever is left is withdrawn.
+    await tx
+      .update(credit)
+      .set({ remainingCredits: 0, status: 'deleted' })
+      .where(
+        and(
+          eq(credit.orderNo, paidOrder.orderNo),
+          eq(credit.transactionType, 'grant')
+        )
+      );
+    await tx
+      .update(order)
+      .set({ status: OrderStatus.REFUNDED })
+      .where(eq(order.id, paidOrder.id));
+  });
 }
 
 // --- Subscription Renewal ---

@@ -16,6 +16,7 @@ import {
   type PaymentEvent,
   type PaymentOrder,
   type PaymentProvider,
+  type PaymentRefund,
   type PaymentSession,
 } from './types';
 
@@ -259,6 +260,14 @@ export class StripeProvider implements PaymentProvider {
 
       const eventType = this.mapStripeEventType(event.type);
 
+      if (eventType === PaymentEventType.PAYMENT_REFUNDED) {
+        return {
+          eventType,
+          eventResult: event,
+          refund: await this.buildRefund(event.data.object as Stripe.Charge),
+        };
+      }
+
       if (eventType === PaymentEventType.CHECKOUT_SUCCESS) {
         paymentSession = await this.buildPaymentSessionFromCheckoutSession(
           event.data.object as Stripe.Response<Stripe.Checkout.Session>
@@ -291,6 +300,31 @@ export class StripeProvider implements PaymentProvider {
     } catch (error) {
       throw error;
     }
+  }
+
+  /**
+   * Map a refunded charge back to the ids stored on our order: the Checkout
+   * Session (one-time packs) and, on API versions that still expose it, the
+   * invoice (subscription payments).
+   */
+  private async buildRefund(charge: Stripe.Charge): Promise<PaymentRefund> {
+    const references: string[] = [];
+    const paymentIntent =
+      typeof charge.payment_intent === 'string'
+        ? charge.payment_intent
+        : charge.payment_intent?.id;
+    if (paymentIntent) {
+      const sessions = await this.client.checkout.sessions.list({
+        payment_intent: paymentIntent,
+        limit: 1,
+      });
+      if (sessions.data[0]) references.push(sessions.data[0].id);
+    }
+    const invoice = (charge as any).invoice;
+    if (invoice) {
+      references.push(typeof invoice === 'string' ? invoice : invoice.id);
+    }
+    return { references, full: charge.refunded === true };
   }
 
   async getPaymentInvoice({
@@ -373,6 +407,8 @@ export class StripeProvider implements PaymentProvider {
         return PaymentEventType.PAYMENT_FAILED;
       case 'customer.subscription.updated':
         return PaymentEventType.SUBSCRIBE_UPDATED;
+      case 'charge.refunded':
+        return PaymentEventType.PAYMENT_REFUNDED;
       case 'customer.subscription.deleted':
         return PaymentEventType.SUBSCRIBE_CANCELED;
       default:

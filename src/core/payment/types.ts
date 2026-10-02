@@ -234,11 +234,20 @@ export function isWebhookIgnored(error: unknown): boolean {
 /**
  * Payment event interface
  */
+/** A refund reported by a webhook, with the ids that can locate our order. */
+export interface PaymentRefund {
+  /** Provider ids to match against order.paymentSessionId/transactionId/invoiceId. */
+  references: string[];
+  /** True only when the whole payment has been refunded. */
+  full: boolean;
+}
+
 export interface PaymentEvent {
   eventType: PaymentEventType;
   eventResult: any; // provider event result
 
   paymentSession?: PaymentSession;
+  refund?: PaymentRefund;
 }
 
 export interface PaymentInvoice {

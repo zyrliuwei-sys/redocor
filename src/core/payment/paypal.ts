@@ -14,6 +14,7 @@ import {
   type PaymentEvent,
   type PaymentOrder,
   type PaymentProvider,
+  type PaymentRefund,
   type PaymentSession,
 } from './types';
 
@@ -513,6 +514,12 @@ export class PayPalProvider implements PaymentProvider {
           paymentStatus: PaymentStatus.FAILED,
           paymentResult: event.resource,
         };
+      } else if (eventType === PaymentEventType.PAYMENT_REFUNDED) {
+        return {
+          eventType,
+          eventResult: event,
+          refund: await this.buildRefund(event),
+        };
       }
 
       return {
@@ -918,6 +925,31 @@ export class PayPalProvider implements PaymentProvider {
     };
 
     return result;
+  }
+
+  // Resolve a refund webhook to the refunded capture/sale and whether it is
+  // now fully refunded (the refund resource itself doesn't say).
+  private async buildRefund(event: any): Promise<PaymentRefund> {
+    const resource = event.resource || {};
+    if (event.event_type === 'PAYMENT.SALE.REFUNDED') {
+      const saleId: string = resource.sale_id || '';
+      if (!saleId) return { references: [], full: false };
+      const sale = await this.makeRequest(`/v1/payments/sale/${saleId}`, 'GET');
+      return { references: [saleId], full: sale.state === 'refunded' };
+    }
+
+    const up = (resource.links || []).find((l: any) => l.rel === 'up');
+    const captureId: string = up?.href?.split('/captures/')[1] || '';
+    if (!captureId) return { references: [], full: false };
+    const capture = await this.makeRequest(
+      `/v2/payments/captures/${captureId}`,
+      'GET'
+    );
+    const orderId = capture.supplementary_data?.related_ids?.order_id;
+    return {
+      references: [captureId, orderId].filter(Boolean),
+      full: capture.status === 'REFUNDED',
+    };
   }
 
   // Build payment session from capture event
