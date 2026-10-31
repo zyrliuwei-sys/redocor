@@ -12,19 +12,22 @@
     "enabled": true,
   },
   "vars": {
-    "DATABASE_PROVIDER": "postgresql",
+    "DATABASE_PROVIDER": "d1",
     // Server-side runtime fallbacks for the build-time VITE_* values — keep in
     // sync with .env.production (better-auth trustedOrigins, payment callbacks).
     "VITE_APP_URL": "https://www.redocor.com",
     "VITE_APP_NAME": "Redocor AI",
   },
   "routes": [{ "pattern": "www.redocor.com", "custom_domain": true }],
-  // ── Postgres via Hyperdrive (instead of D1) ────────────────────────────────
-  // Created by /deploy-cloudflare from the Neon direct connection string.
-  // The build keeps the postgres driver in the bundle when
-  // DATABASE_PROVIDER=postgresql — see vite.config.ts.
-  "hyperdrive": [
-    { "binding": "HYPERDRIVE", "id": "f1ab0ea7da274e7da869b3e2ba4a68b2" }
+  // ── D1 (migrated from Neon Postgres + Hyperdrive — Neon free-tier compute
+  // quota kept suspending the production DB) ─────────────────────────────────
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "redocor",
+      "database_id": "839a75db-cf06-4573-9682-7add27144337",
+      "migrations_dir": "drizzle",
+    },
   ],
   //
   // Other optional bindings — uncomment when needed:
