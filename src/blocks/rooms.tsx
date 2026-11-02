@@ -18,6 +18,7 @@ const ROOMS = [
 const TOOLS = [
   { key: 'planner', href: '/ai-room-planner' },
   { key: 'makeover', href: '/ai-room-makeover' },
+  { key: 'planner3d', href: '/3d-room-planner-ai' },
 ] as const;
 
 /**

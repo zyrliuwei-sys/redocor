@@ -21,6 +21,7 @@ export function Header() {
 
   const navLinks = [
     { href: '/room-design', label: m['landing.nav.create']() },
+    { href: '/3d-room-planner-ai', label: m['landing.nav.planner3d']() },
     { href: '/#how', label: m['landing.nav.how']() },
     { href: '/#gallery', label: m['landing.nav.gallery']() },
     { href: '/pricing', label: m['landing.nav.pricing']() },

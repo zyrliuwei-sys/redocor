@@ -12,13 +12,13 @@ import { Showcase } from '@/blocks/showcase';
 import { SupportWidget } from '@/blocks/support-widget';
 
 function RoomDesignPage() {
-  const { room } = Route.useSearch();
+  const { room, style } = Route.useSearch();
   return (
     <div className="bg-background text-foreground flex min-h-screen flex-col">
       <Header />
       <main>
         <CreateHero />
-        <DesignStudio initialRoom={room} />
+        <DesignStudio initialRoom={room} initialStyle={style} />
         <Showcase />
         <DesignTips />
         <RoomDesignLinks />
@@ -30,9 +30,11 @@ function RoomDesignPage() {
 }
 
 export const Route = createFileRoute('/room-design')({
-  // /room-design?room=bathroom — spoke pages preload the room picker.
+  // /room-design?room=bathroom&style=japandi — spoke pages and the 3D planner
+  // generator preload the room and style pickers.
   validateSearch: (search: Record<string, unknown>) => ({
     room: typeof search.room === 'string' ? search.room : undefined,
+    style: typeof search.style === 'string' ? search.style : undefined,
   }),
   loader: () => ({ locale: getLocale() }),
   head: ({ loaderData }) => {

@@ -139,9 +139,16 @@ function Chip({
  * Apple-style layout: image canvas on the left, controls on the right.
  *
  * `initialRoom` preselects a room type (used by `?room=` links from the room
- * landing pages) and scrolls the studio into view.
+ * landing pages) and scrolls the studio into view. `initialStyle` preselects
+ * a style (used by `?style=` links, e.g. the 3D planner generator).
  */
-export function DesignStudio({ initialRoom }: { initialRoom?: string }) {
+export function DesignStudio({
+  initialRoom,
+  initialStyle,
+}: {
+  initialRoom?: string;
+  initialStyle?: string;
+}) {
   const { data: session } = useSession();
   const [imageData, setImageData] = useState<string | null>(null);
   const [roomType, setRoomType] = useState<RoomType>(
@@ -149,7 +156,11 @@ export function DesignStudio({ initialRoom }: { initialRoom?: string }) {
       ? (initialRoom as RoomType)
       : 'living'
   );
-  const [style, setStyle] = useState<Style>('modern');
+  const [style, setStyle] = useState<Style>(
+    (STYLES as readonly string[]).includes(initialStyle ?? '')
+      ? (initialStyle as Style)
+      : 'modern'
+  );
   const [instructions, setInstructions] = useState('');
   const [view, setView] = useState<'result' | 'original'>('result');
   const [history, setHistory] = useState<DesignResult[]>([]);
@@ -166,6 +177,13 @@ export function DesignStudio({ initialRoom }: { initialRoom?: string }) {
       setRoomType(initialRoom as RoomType);
     }
   }, [initialRoom]);
+
+  // Deep link ?style=japandi — preselects the style picker.
+  useEffect(() => {
+    if (initialStyle && (STYLES as readonly string[]).includes(initialStyle)) {
+      setStyle(initialStyle as Style);
+    }
+  }, [initialStyle]);
 
   // A showcase work was tapped — load its room + style and scroll into view.
   useEffect(() => {

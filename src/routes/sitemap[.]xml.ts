@@ -10,6 +10,7 @@ export const STATIC_PATHS = [
   '',
   '/room-design',
   '/ai-room-design-free',
+  '/3d-room-planner-ai',
   ...Object.values(ROOM_PATHS),
   '/pricing',
   '/blog',
