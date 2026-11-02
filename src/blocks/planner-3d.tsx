@@ -290,7 +290,7 @@ export function Planner3D() {
               <ArrowRight className="size-4" />
             </Link>
           </div>
-          <div className="overflow-hidden rounded-[28px] shadow-xl">
+          <div className="relative overflow-hidden rounded-[28px] shadow-xl">
             <img
               src={HERO_IMG.src}
               alt={m['planner3d.alt.hero']()}
@@ -299,6 +299,29 @@ export function Planner3D() {
               decoding="async"
               className="aspect-[4/3] w-full object-cover"
             />
+            {/* Overlay copy — the image slot carries visible text even
+                before the image paints. */}
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/35 to-transparent px-6 pt-14 pb-6 text-white">
+              <p className="text-xl leading-snug font-semibold tracking-tight sm:text-2xl">
+                {m['planner3d.hero.overlay.title']()}
+              </p>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {(
+                  [
+                    'planner3d.hero.overlay.chip1',
+                    'planner3d.hero.overlay.chip2',
+                    'planner3d.hero.overlay.chip3',
+                  ] as const
+                ).map((key) => (
+                  <li
+                    key={key}
+                    className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur-sm"
+                  >
+                    {m[key]()}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </section>

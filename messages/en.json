@@ -1323,5 +1323,9 @@
   "planner3d.cta.button": "Start planning free",
   "landing.rooms.planner3d": "3D room planner AI",
   "landing.nav.planner3d": "3D Planner",
-  "planner3d.compare.row_header": "Aspect"
+  "planner3d.compare.row_header": "Aspect",
+  "planner3d.hero.overlay.title": "One photo in — a planned room out",
+  "planner3d.hero.overlay.chip1": "Layout kept",
+  "planner3d.hero.overlay.chip2": "8 design styles",
+  "planner3d.hero.overlay.chip3": "Ready in ~1 min"
 }

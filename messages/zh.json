@@ -1323,5 +1323,9 @@
   "planner3d.cta.button": "免费开始规划",
   "landing.rooms.planner3d": "3D 房间规划 AI",
   "landing.nav.planner3d": "3D 规划",
-  "planner3d.compare.row_header": "对比维度"
+  "planner3d.compare.row_header": "对比维度",
+  "planner3d.hero.overlay.title": "一张照片进，一个完整方案出",
+  "planner3d.hero.overlay.chip1": "户型保留",
+  "planner3d.hero.overlay.chip2": "8 种风格",
+  "planner3d.hero.overlay.chip3": "一分钟出图"
 }
